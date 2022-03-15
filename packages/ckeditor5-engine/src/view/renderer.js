@@ -199,11 +199,11 @@ export default class Renderer {
 	 */
 	render() {
 		// console.info( '[Renderer] Rendering.' );
-		if ( this.isComposing ) {
-			console.info( '[Renderer] Rendering while composing aborted.' );
-
-			return;
-		}
+		// if ( this.isComposing ) {
+		// 	console.info( '[Renderer] Rendering while composing aborted.' );
+		//
+		// 	return;
+		// }
 
 		let inlineFillerPosition;
 		const isInlineFillerRenderingPossible = env.isBlink && !env.isAndroid ? !this.isSelecting : true;
@@ -742,6 +742,10 @@ export default class Renderer {
 		// to, may disappear in DOM which would break the selection (e.g. in real-time collaboration scenarios).
 		// https://github.com/ckeditor/ckeditor5/issues/10562, https://github.com/ckeditor/ckeditor5/issues/10723
 		if ( env.isBlink && !env.isAndroid && this.isSelecting && !this.markedChildren.size ) {
+			return;
+		}
+
+		if ( this.isComposing ) {
 			return;
 		}
 

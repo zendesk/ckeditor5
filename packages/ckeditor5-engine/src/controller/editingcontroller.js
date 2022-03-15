@@ -116,12 +116,14 @@ export default class EditingController {
 			// currentCompositionStartRange = this.view.document.selection.getFirstRange();
 			const selectedElement = model.document.selection.getSelectedElement();
 
-			if ( !selectedElement || !model.schema.isObject( selectedElement ) ) {
+			if ( !selectedElement || !model.schema.isObject( selectedElement ) || inlineFSC ) {
 				return;
 			}
 
 			const sel = document.getSelection();
 			inlineFSC = document.createElement( model.schema.isInline( selectedElement ) ? 'span' : 'p' );
+
+			inlineFSC.classList.add( 'inline-fsc' );
 
 			if ( model.schema.isInline( selectedElement ) ) {
 				inlineFSC.innerHTML = '\u2060';
@@ -168,6 +170,26 @@ export default class EditingController {
 				selection: this.view.document.selection
 			} ) );
 		} );
+
+		setTimeout( () => {
+			// const sel = document.getSelection();
+			// const { baseNode, baseOffset, extentNode, extentOffset } = sel;
+
+			const p = document.querySelector( '.ck-content > p' );
+			p.appendChild( document.querySelector( '.inline-fsc' ) );
+
+			// console.info( 'set selection' );
+			// sel.collapse( baseNode, baseOffset );
+			// sel.extend( extentNode, extentOffset );
+
+			editor.model.change( writer => {
+				const root = editor.model.document.getRoot();
+				writer.setAttribute( 'bold', true, writer.createRange(
+					writer.createPositionAt( root.getChild( 3 ), 40 ),
+					writer.createPositionAt( root.getChild( 3 ), 80 ) )
+				);
+			} );
+		}, 5000 );
 
 		// Attach default model converters.
 		this.downcastDispatcher.on( 'insert:$text', insertText(), { priority: 'lowest' } );
