@@ -223,26 +223,34 @@ document.addEventListener( 'compositionstart', evt => {
 	domSelection.selectAllChildren( compositionSpan );
 
 	// We're mocking a marker applied somewhere around the selection.
-	// setTimeout( () => {
-	// 	const markerMockSpan = document.createElement( 'span' );
-	// 	markerMockSpan.style.background = 'lightgreen';
-	// 	markerMockSpan.style.padding = '10px 5px';
-	// 	markerMockSpan.style.outline = '1px solid darkgreen';
+	setTimeout( () => {
+		const markerMockSpan = document.createElement( 'span' );
+		markerMockSpan.style.background = 'lightgreen';
+		markerMockSpan.style.padding = '10px 5px';
+		markerMockSpan.style.outline = '1px solid darkgreen';
 
-	// 	compositionSpan.parentNode.insertBefore( markerMockSpan, compositionSpan );
-	// 	markerMockSpan.appendChild( compositionSpan );
+		compositionSpan.parentNode.insertBefore( markerMockSpan, compositionSpan );
+		markerMockSpan.appendChild( compositionSpan );
+	}, 2000 );
+
+	// setTimeout( () => {
+	// 	for ( const child of Array.from( contenteditableContainer.childNodes[ 1 ].childNodes ) ) {
+	// 		console.log( 'moving', child );
+	// 		contenteditableContainer.childNodes[ 2 ].appendChild( child );
+	// 	}
+
+	// 	// Safari does not like this. Interrupts composition.
+	// 	// domSelection.selectAllChildren( compositionSpan );
+	// 	domSelection.collapse( compositionSpan.firstChild, compositionSpan.firstChild.data.length );
 	// }, 2000 );
 
-	setTimeout( () => {
-		for ( const child of Array.from( contenteditableContainer.childNodes[ 1 ].childNodes ) ) {
-			console.log( 'moving', child );
-			contenteditableContainer.childNodes[ 2 ].appendChild( child );
-		}
+	// setTimeout( () => {
+	// 	contenteditableContainer.childNodes[ 2 ].appendChild( compositionSpan );
 
-		// Safari does not like this. Interrupts composition.
-		// domSelection.selectAllChildren( compositionSpan );
-		domSelection.collapse( compositionSpan.firstChild, compositionSpan.firstChild.data.length );
-	}, 2000 );
+	// 	// Safari does not like this. Interrupts composition.
+	// 	// domSelection.selectAllChildren( compositionSpan );
+	// 	domSelection.collapse( compositionSpan.firstChild, compositionSpan.firstChild.data.length );
+	// }, 2000 );
 } );
 
 document.addEventListener( 'compositionend', evt => {
