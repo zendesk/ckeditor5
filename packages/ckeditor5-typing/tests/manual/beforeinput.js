@@ -187,22 +187,77 @@ document.addEventListener( 'beforeinput', evt => {
 	console.groupEnd();
 } );
 
+let compositionSpan;
+
 document.addEventListener( 'compositionstart', evt => {
+	console.log(
+		`%c┌───────────────────────────── ＃${ ++compositionEventCount } native compositionstart ─────────────────────────────┐`,
+		'font-weight: bold; color: green'
+	);
+
+	// This is for Chrome, which when the composition span is wrapped in a mock marker does not fire compositionend
+	// but another composition start. Let's pretend that the old composition is going on.
+	if ( compositionSpan ) {
+		const domSelection = document.getSelection();
+
+		domSelection.selectAllChildren( compositionSpan );
+
+		return;
+	}
+
 	// Don't log for the editor.
 	if ( evt.target.closest( '.ck-content' ) ) {
 		return;
 	}
 
-	console.log(
-		`%c┌───────────────────────────── ＃${ ++compositionEventCount } native compositionstart ─────────────────────────────┐`,
-		'font-weight: bold; color: green'
-	);
+	const contenteditableContainer = document.querySelector( '#raw-contenteditable' );
+	compositionSpan = document.createElement( 'span' );
+	compositionSpan.innerHTML = '\u2060';
+	compositionSpan.style.outline = '1px solid red';
+	compositionSpan.style.padding = '3px';
+	const domSelection = document.getSelection();
+
+	contenteditableContainer.childNodes[ 1 ].appendChild( compositionSpan );
+
+	// Note: FF requires selectAllChildren. Otherwise arrow up/down navigation fails in FF during composition.
+	domSelection.selectAllChildren( compositionSpan );
+
+	// We're mocking a marker applied somewhere around the selection.
+	// setTimeout( () => {
+	// 	const markerMockSpan = document.createElement( 'span' );
+	// 	markerMockSpan.style.background = 'lightgreen';
+	// 	markerMockSpan.style.padding = '10px 5px';
+	// 	markerMockSpan.style.outline = '1px solid darkgreen';
+
+	// 	compositionSpan.parentNode.insertBefore( markerMockSpan, compositionSpan );
+	// 	markerMockSpan.appendChild( compositionSpan );
+	// }, 2000 );
+
+	setTimeout( () => {
+		for ( const child of Array.from( contenteditableContainer.childNodes[ 1 ].childNodes ) ) {
+			console.log( 'moving', child );
+			contenteditableContainer.childNodes[ 2 ].appendChild( child );
+		}
+
+		// Safari does not like this. Interrupts composition.
+		// domSelection.selectAllChildren( compositionSpan );
+		domSelection.collapse( compositionSpan.firstChild, compositionSpan.firstChild.data.length );
+	}, 2000 );
 } );
 
 document.addEventListener( 'compositionend', evt => {
 	// Don't log for the editor.
 	if ( evt.target.closest( '.ck-content' ) ) {
 		return;
+	}
+
+	// Safari removes it on its own.
+	if ( compositionSpan.parentNode ) {
+		for ( const child of compositionSpan.childNodes ) {
+			compositionSpan.parentNode.insertBefore( child, compositionSpan );
+		}
+
+		compositionSpan.remove();
 	}
 
 	console.log(
