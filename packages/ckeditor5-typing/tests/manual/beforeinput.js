@@ -220,7 +220,8 @@ document.addEventListener( 'compositionstart', evt => {
 	contenteditableContainer.childNodes[ 1 ].appendChild( compositionSpan );
 
 	// Note: FF requires selectAllChildren. Otherwise arrow up/down navigation fails in FF during composition.
-	domSelection.selectAllChildren( compositionSpan );
+	// domSelection.selectAllChildren( compositionSpan );
+	domSelection.collapse( compositionSpan.firstChild, compositionSpan.firstChild.data.length );
 
 	// We're mocking a marker applied somewhere around the selection.
 	setTimeout( () => {
