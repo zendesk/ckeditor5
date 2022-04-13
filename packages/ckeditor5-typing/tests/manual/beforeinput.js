@@ -163,6 +163,8 @@ ClassicEditor
 let beforeInputEventCount = 0;
 let compositionEventCount = 0;
 
+let isIME = false;
+
 document.addEventListener( 'beforeinput', evt => {
 	// Don't log for the editor.
 	if ( evt.target.closest( '.ck-content' ) ) {
@@ -171,12 +173,22 @@ document.addEventListener( 'beforeinput', evt => {
 
 	const { inputType, data, isComposing } = evt;
 
+	if ( isComposing ) {
+		isIME = true;
+	}
+
 	console.group(
 		`#${ ++beforeInputEventCount } ` +
 		'native beforeInput ' +
 		`(%c"${ inputType }"%c${ isComposing ? ',%c isComposing' : '%c' }%c)`,
 		'color: blue', 'color: default', 'color: green', 'color: default'
 	);
+
+	if ( isIME && !isComposing ) {
+		console.log( 'prevented' );
+		isIME = false;
+		evt.preventDefault();
+	}
 
 	if ( data ) {
 		console.log( `%cdata:%c "${ data }"`, 'font-weight: bold', 'font-weight: default' );
@@ -194,6 +206,8 @@ document.addEventListener( 'compositionstart', evt => {
 		`%c┌───────────────────────────── ＃${ ++compositionEventCount } native compositionstart ─────────────────────────────┐`,
 		'font-weight: bold; color: green'
 	);
+
+	isIME = false;
 
 	// This is for Chrome, which when the composition span is wrapped in a mock marker does not fire compositionend
 	// but another composition start. Let's pretend that the old composition is going on.
@@ -223,35 +237,47 @@ document.addEventListener( 'compositionstart', evt => {
 	// domSelection.selectAllChildren( compositionSpan );
 	domSelection.collapse( compositionSpan.firstChild, compositionSpan.firstChild.data.length );
 
-	// We're mocking a marker applied somewhere around the selection.
-	setTimeout( () => {
-		const markerMockSpan = document.createElement( 'span' );
-		markerMockSpan.style.background = 'lightgreen';
-		markerMockSpan.style.padding = '10px 5px';
-		markerMockSpan.style.outline = '1px solid darkgreen';
+	const testMode = document.querySelector( 'input[name=ime-mode]:checked' ).value;
 
-		compositionSpan.parentNode.insertBefore( markerMockSpan, compositionSpan );
-		markerMockSpan.appendChild( compositionSpan );
-	}, 2000 );
+	if ( testMode == 'wrap' ) {
+		// We're mocking a marker applied somewhere around the selection.
+		setTimeout( () => {
+			console.log( 'test', testMode );
 
-	// setTimeout( () => {
-	// 	for ( const child of Array.from( contenteditableContainer.childNodes[ 1 ].childNodes ) ) {
-	// 		console.log( 'moving', child );
-	// 		contenteditableContainer.childNodes[ 2 ].appendChild( child );
-	// 	}
+			const markerMockSpan = document.createElement( 'span' );
+			markerMockSpan.style.background = 'lightgreen';
+			markerMockSpan.style.padding = '10px 5px';
+			markerMockSpan.style.outline = '1px solid darkgreen';
 
-	// 	// Safari does not like this. Interrupts composition.
-	// 	// domSelection.selectAllChildren( compositionSpan );
-	// 	domSelection.collapse( compositionSpan.firstChild, compositionSpan.firstChild.data.length );
-	// }, 2000 );
+			compositionSpan.parentNode.insertBefore( markerMockSpan, compositionSpan );
+			markerMockSpan.appendChild( compositionSpan );
+		}, 2000 );
+	} else if ( testMode == 'move-content' ) {
+		setTimeout( () => {
+			console.log( 'test', testMode );
 
-	// setTimeout( () => {
-	// 	contenteditableContainer.childNodes[ 2 ].appendChild( compositionSpan );
+			contenteditableContainer.insertBefore( document.createElement( 'p' ), contenteditableContainer.childNodes[ 2 ] );
 
-	// 	// Safari does not like this. Interrupts composition.
-	// 	// domSelection.selectAllChildren( compositionSpan );
-	// 	domSelection.collapse( compositionSpan.firstChild, compositionSpan.firstChild.data.length );
-	// }, 2000 );
+			for ( const child of Array.from( contenteditableContainer.childNodes[ 1 ].childNodes ).slice( 1 ) ) {
+				console.log( 'moving', child );
+				contenteditableContainer.childNodes[ 2 ].appendChild( child );
+			}
+
+			// Safari does not like this. Interrupts composition.
+			// domSelection.selectAllChildren( compositionSpan );
+			domSelection.collapse( compositionSpan.firstChild, compositionSpan.firstChild.data.length );
+		}, 2000 );
+	} else if ( testMode == 'move-container' ) {
+		setTimeout( () => {
+			console.log( 'test', testMode );
+
+			contenteditableContainer.childNodes[ 2 ].appendChild( compositionSpan );
+
+			// Safari does not like this. Interrupts composition.
+			// domSelection.selectAllChildren( compositionSpan );
+			domSelection.collapse( compositionSpan.firstChild, compositionSpan.firstChild.data.length );
+		}, 2000 );
+	}
 } );
 
 document.addEventListener( 'compositionend', evt => {
@@ -267,10 +293,15 @@ document.addEventListener( 'compositionend', evt => {
 		}
 
 		compositionSpan.remove();
+		compositionSpan = null;
 	}
 
 	console.log(
 		`%c└───────────────────────────── ＃${ compositionEventCount } native compositionend ─────────────────────────────┘`,
 		'font-weight: bold; color: green'
 	);
+} );
+
+document.addEventListener( 'keydown', evt => {
+	console.log( 'keydown:', evt.key );
 } );

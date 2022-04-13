@@ -1,6 +1,11 @@
 <h2>Raw contenteditable</h2>
 
-<div id="raw-contenteditable" contenteditable="true"><h2>Beforeinput integration test</h2><p>Paragraph with som mistaks to test spell <a href="foo">checking WRITE HERE:</a></p><p>Multi-byte/code point sequences playground: 👪, 👨‍👩‍👦, 👨‍👩‍👧‍👧, b̂, a&#771;.</p></div>
+<div style="margin-bottom: 10px">
+	<label><input type="radio" name="ime-mode" value="wrap" checked> Wrap with span</label>
+	<label><input type="radio" name="ime-mode" value="move-content"> Move part of block content to other paragraph</label>
+	<label><input type="radio" name="ime-mode" value="move-container"> Move composition container to other paragraph</label>
+</div>
+<div id="raw-contenteditable" contenteditable="true"><h2>Beforeinput integration test</h2><p><b>Paragraph</b> with som mistaks to test spell <a href="foo">checking WRITE HERE:</a></p><p>Multi-byte/code point sequences playground: 👪, 👨‍👩‍👦, 👨‍👩‍👧‍👧, b̂, a&#771;.</p></div>
 
 <h2>In editor</h2>
 
