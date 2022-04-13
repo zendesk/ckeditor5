@@ -187,7 +187,13 @@ document.addEventListener( 'beforeinput', evt => {
 	console.groupEnd();
 } );
 
+let floatedCompositionContainer;
+
 document.addEventListener( 'compositionstart', evt => {
+	if ( floatedCompositionContainer ) {
+		return;
+	}
+
 	// Don't log for the editor.
 	if ( evt.target.closest( '.ck-content' ) ) {
 		return;
@@ -197,6 +203,34 @@ document.addEventListener( 'compositionstart', evt => {
 		`%c┌───────────────────────────── ＃${ ++compositionEventCount } native compositionstart ─────────────────────────────┐`,
 		'font-weight: bold; color: green'
 	);
+
+	const root = document.querySelector( '#raw-contenteditable' );
+	const domSelection = document.getSelection();
+	// const range = domSelection.getRangeAt( 0 );
+
+	floatedCompositionContainer = document.createElement( 'span' );
+	// floatedCompositionContainer.setAttribute( 'href', 'ckeditor.com' );
+
+	const range = domSelection.getRangeAt( 0 );
+
+	// floatedCompositionContainer.innerHTML = '\u2060';
+	floatedCompositionContainer.classList.add( 'floated-composition-container' );
+
+	root.appendChild( floatedCompositionContainer );
+	console.log( range.startContainer );
+	floatedCompositionContainer.appendChild( range.startContainer );
+	// domSelection.collapse( floatedCompositionContainer.firstChild, floatedCompositionContainer.firstChild.data.length );
+
+	// domSelection.removeAllRanges();
+	domSelection.selectAllChildren( floatedCompositionContainer );
+	// domSelection.collapse( root, root.childNodes.length );
+	// document.execCommand( 'selectAll' );
+	// Note: FF requires selectAllChildren. Otherwise arrow up/down navigation fails in FF during composition.
+
+	setTimeout( () => {
+		// domSelection.selectAllChildren( floatedCompositionContainer );
+		// domSelection.collapse( floatedCompositionContainer.firstChild, floatedCompositionContainer.firstChild.data.length );
+	}, 200 );
 } );
 
 document.addEventListener( 'compositionend', evt => {
