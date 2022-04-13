@@ -188,6 +188,7 @@ document.addEventListener( 'beforeinput', evt => {
 		console.log( 'prevented' );
 		isIME = false;
 		evt.preventDefault();
+		cleanIME();
 	}
 
 	if ( data ) {
@@ -242,6 +243,10 @@ document.addEventListener( 'compositionstart', evt => {
 	if ( testMode == 'wrap' ) {
 		// We're mocking a marker applied somewhere around the selection.
 		setTimeout( () => {
+			if ( !compositionSpan ) {
+				return;
+			}
+
 			console.log( 'test', testMode );
 
 			const markerMockSpan = document.createElement( 'span' );
@@ -254,6 +259,10 @@ document.addEventListener( 'compositionstart', evt => {
 		}, 2000 );
 	} else if ( testMode == 'move-content' ) {
 		setTimeout( () => {
+			if ( !compositionSpan ) {
+				return;
+			}
+
 			console.log( 'test', testMode );
 
 			contenteditableContainer.insertBefore( document.createElement( 'p' ), contenteditableContainer.childNodes[ 2 ] );
@@ -269,6 +278,10 @@ document.addEventListener( 'compositionstart', evt => {
 		}, 2000 );
 	} else if ( testMode == 'move-container' ) {
 		setTimeout( () => {
+			if ( !compositionSpan ) {
+				return;
+			}
+
 			console.log( 'test', testMode );
 
 			contenteditableContainer.childNodes[ 2 ].appendChild( compositionSpan );
@@ -286,21 +299,30 @@ document.addEventListener( 'compositionend', evt => {
 		return;
 	}
 
-	// Safari removes it on its own.
-	if ( compositionSpan.parentNode ) {
-		for ( const child of compositionSpan.childNodes ) {
-			compositionSpan.parentNode.insertBefore( child, compositionSpan );
-		}
-
-		compositionSpan.remove();
-		compositionSpan = null;
-	}
+	cleanIME();
 
 	console.log(
 		`%c└───────────────────────────── ＃${ compositionEventCount } native compositionend ─────────────────────────────┘`,
 		'font-weight: bold; color: green'
 	);
 } );
+
+function cleanIME() {
+	// Safari removes it on its own.
+	if ( compositionSpan.parentNode ) {
+		let text = '';
+
+		for ( const child of Array.from( compositionSpan.childNodes ) ) {
+			if ( child.nodeType == Node.TEXT_NODE ) {
+				text += child.data;
+			}
+		}
+
+		compositionSpan.parentNode.insertBefore( document.createTextNode( text ), compositionSpan );
+		compositionSpan.remove();
+		compositionSpan = null;
+	}
+}
 
 document.addEventListener( 'keydown', evt => {
 	console.log( 'keydown:', evt.key );
