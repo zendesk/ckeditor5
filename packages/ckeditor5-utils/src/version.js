@@ -19,7 +19,7 @@ export default version;
 const windowOrGlobal = typeof window === 'object' ? window : global;
 
 /* istanbul ignore next */
-if ( windowOrGlobal.CKEDITOR_VERSION ) {
+if ( windowOrGlobal.CKEDITOR_VERSION && typeof jest === 'undefined') {
 	/**
 	 * This error is thrown when due to a mistake in how CKEditor 5 was installed or initialized, some
 	 * of its modules were duplicated (evaluated and executed twice). Module duplication leads to inevitable runtime
